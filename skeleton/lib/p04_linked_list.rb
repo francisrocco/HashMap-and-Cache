@@ -13,6 +13,11 @@ class Link
   def to_s
     "#{@key}: #{@val}"
   end
+
+  def delete_thyself
+    @next.prev = @prev
+    @prev.next = @next
+  end
 end
 
 class LinkedList
@@ -62,6 +67,7 @@ class LinkedList
     new_link.prev = @tail.prev
     new_link.next = @tail
     @tail.prev = new_link
+    new_link
   end
 
   def remove(key)
