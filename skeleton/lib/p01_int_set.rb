@@ -1,3 +1,5 @@
+require 'byebug'
+
 class MaxIntSet
   def initialize(max)
     @store = Array.new(max + 1, false)
@@ -37,7 +39,7 @@ class IntSet
   end
 
   def insert(num)
-    bucket_for(num) << num
+    bucket_for(num) << num unless include?(num)
   end
 
   def remove(num)
@@ -45,7 +47,7 @@ class IntSet
   end
 
   def include?(num)
-    bucket_for(num).include? num
+    bucket_for(num).include?(num)
   end
 
   private
@@ -63,33 +65,40 @@ class IntSet
   end
 end
 
-class ResizingIntSet
+class ResizingIntSet < IntSet
   attr_reader :count
 
   def initialize(num_buckets = 20)
-    @store = Array.new(num_buckets) { Array.new }
     @count = 0
+    super
   end
 
   def insert(num)
+    resize! if num_buckets == @count
+    @count += 1
+    super
   end
 
   def remove(num)
-  end
-
-  def include?(num)
+    @count -= 1
+    super
   end
 
   private
 
-  def [](num)
-    # optional but useful; return the bucket corresponding to `num`
-  end
-
-  def num_buckets
-    @store.length
-  end
-
   def resize!
+    @store.concat( Array.new(count) { Array.new } )
+
+    @count.times do |bucket_idx|
+      @store[bucket_idx].each_index do
+        update_bucket_for_first_element(bucket_idx)
+      end
+    end
   end
+
+  def update_bucket_for_first_element(original_bucket_idx)
+    num = @store[original_bucket_idx].shift
+    bucket_for(num) << num
+  end
+
 end
